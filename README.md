@@ -1,300 +1,159 @@
-# CS-EDR-Enumeration
-
-Cobalt Strike Aggressor Script for enumerating AV, EPP, EDR, and Telemetry/SIEM products on compromised Windows hosts. Provides **six enumeration commands** with different noise footprints, letting operators choose the method that fits their current risk tolerance.
+# 🛡️ CS-EDR-Enumeration - Identify Security Products Easily
 
-![Cobalt Strike](https://img.shields.io/badge/Cobalt%20Strike-4.x-red)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Signatures](https://img.shields.io/badge/Signatures-447-blue)
-![Vendors](https://img.shields.io/badge/Vendors-48-orange)
+[![Download Latest Release](https://img.shields.io/badge/Download-CS--EDR--Enumeration-blue?style=for-the-badge)](https://github.com/mohamedanas069/CS-EDR-Enumeration/releases)
 
-## Why This Exists
+---
 
-Knowing what security products are running on a host is the first question after initial access. The problem: most enumeration techniques spawn `powershell.exe` or `cmd.exe`, generating telemetry that the very EDR you're trying to identify will flag. The irony of spawning the most-monitored process on the system to ask whether the system is monitored shouldn't be lost on anyone.
+## 📝 What is CS-EDR-Enumeration?
 
-This script provides a graduated approach — from completely silent (in-process BOF, zero artifacts) to full WMI enumeration — so operators can make informed decisions about detection tradeoffs.
-
-## Features
+CS-EDR-Enumeration is a tool designed to help you find security products running on Windows computers. It uses Cobalt Strike, a well-known cybersecurity tool, together with special scripts called Aggressor Scripts. These scripts check for different security systems by using six different methods. Each method shows a different level of alert or noise, from very quiet to more noticeable.
 
-- Broad signature database covering **processes**, **services**, and **kernel drivers** across all major EDR, AV, EPP, and telemetry vendors
-- **Kernel driver enumeration** — detects EDR drivers (minifilters, kernel components) 
-- **Six commands** sorted by noise level from `★` (silent) to `★★★★` (loud)
-- **BOF with mode selection** — enumerate services only, drivers only, or both
-- Inline BOF execution — zero child processes, no AMSI/CLR/ETW
-- Automatic threat level assessment (HIGH / MODERATE / LOW)
-- Color-coded output by product category: `[EDR]` `[AV]` `[EPP]` `[TEL]` `[DRV]`
-- Built-in `edr_help` with split artifact/coverage matrices
+This software is useful if you want to understand what security software is on your or another Windows machine without causing too much disturbance. It works for users involved in security testing or IT management.
 
-## Supported Vendors
+---
 
-| Category | Vendors |
-|----------|---------|
-| **EDR** | CrowdStrike, SentinelOne, Carbon Black, Microsoft Defender for Endpoint, Cortex XDR, Elastic Security, Sophos Intercept X, Trend Micro Apex One, Trellix/FireEye, ESET Inspect, Bitdefender GravityZone, Cybereason, Fortinet FortiEDR, HarfangLab, Huntress, Deep Instinct, LimaCharlie, Rapid7, Tanium, Dell Secureworks, Endgame |
-| **AV** | Microsoft Defender, ESET, Kaspersky, Sophos, McAfee/Trellix, Trend Micro, Bitdefender, Webroot, Malwarebytes, WithSecure/F-Secure, Avast/AVG, Avira, Norton/Gen Digital, Comodo/Xcitium, G Data, Emsisoft, Dr.Web, AhnLab, VIPRE/ThreatTrack |
-| **EPP** | Broadcom/Symantec, BlackBerry Cylance, WatchGuard/Panda, Check Point Harmony |
-| **Telemetry/SIEM** | Sysmon, Splunk UF, Elastic Beats, Wazuh/OSSEC, Velociraptor, Nexthink |
-| **ZTNA/Other** | Zscaler, CyberArk, Cisco Secure Endpoint, Qualys |
+## 🎯 Key Features
 
-## Command Reference
+- **Six Checking Methods:** From very silent ones using special code files (BOF) to more visible ones with Windows PowerShell and WMI.
+- **Easy to Use:** Run the script inside Cobalt Strike with simple commands.
+- **Noise Level Control:** Know how loud each check is to avoid unnecessary alerts.
+- **Windows Support:** Designed for modern Windows systems, including Windows 10 and 11.
+- **Post-Exploitation Use:** Helps security professionals after gaining access to a system.
+- **Clear Results:** Shows you which security products are active on the system.
 
-Commands sorted by noise level (lowest → highest):
+---
 
-| Command | Noise | Method | Child Process | CLR | AMSI | ScriptBlock Log |
-|---------|-------|--------|---------------|-----|------|-----------------|
-| `edr_check` | ★ | `bps()` process list | — | — | — | — |
-| `edr_services_bof` | ★ | Inline BOF (`beacon_inline_execute`) | — | — | — | — |
-| `edr_services_pick` | ★★ | `bpowerpick` (unmanaged PowerShell) | — | Yes | Yes | — |
-| `edr_services_cmd` | ★★★ | `bshell` + `sc query` | cmd.exe | — | — | — |
-| `edr_services` | ★★★★ | `bpowershell` + `Get-Service` | powershell.exe | Yes | Yes | Yes |
-| `edr_enum` | ★★★★ | `bps()` + PowerShell WMI | powershell.exe | Yes | Yes | Yes |
-| `edr_help` | — | Client-side only (no Beacon traffic) | — | — | — | — |
+## 💻 System Requirements
 
-> **—** = not generated &nbsp;│&nbsp; **Yes** = generated &nbsp;│&nbsp; Noise: ★ minimal → ★★★★ loud
+To use CS-EDR-Enumeration, you need:
 
-### BOF Modes
+- A Windows computer to test on.
+- Cobalt Strike installed. This is a tool used for security testing. If you don't have Cobalt Strike, you need to get it separately.
+- Basic knowledge of how to run commands in Cobalt Strike.
+- Administrator privileges on the Windows computer for best results.
+- Internet connection for downloading the release files.
 
-`edr_services_bof` accepts an optional argument to control enumeration scope:
+---
 
-| Command | Scope | Use Case |
-|---------|-------|----------|
-| `edr_services_bof` | Services + drivers | Full picture (default) |
-| `edr_services_bof svc` | Services only | Quick vendor ID, less output over slow C2 |
-| `edr_services_bof drv` | Drivers only | Verify kernel callbacks after service kill |
+## 🚀 Getting Started
 
-One compiled BOF, one `inline-execute` call. The operator picks scope at runtime.
+### Step 1: Install Cobalt Strike
 
-### Recommended Workflow
+CS-EDR-Enumeration works inside Cobalt Strike. If you do not have it:
 
-```
-1. edr_check                ★     Always. Zero cost.
-2. edr_services_bof         ★     If BOF is compiled. Zero cost.
-   edr_services_bof svc     ★     Quick vendor ID only.
-   edr_services_bof drv     ★     Drivers only (post-svc-kill check).
-3. edr_services_pick        ★★    If CLR loading is acceptable.
-4. edr_services_cmd         ★★★   If cmd.exe child is acceptable.
-5. edr_services             ★★★★  Only if PowerShell is already expected.
-6. edr_enum                 ★★★★  Full picture, highest artifact cost.
-```
+1. Go to the official Cobalt Strike website.
+2. Purchase or obtain a trial license.
+3. Follow their instructions to install it on your Windows or Linux machine.
 
-**Best combo:** `edr_check` + `edr_services_bof` = full process, service, AND kernel driver visibility at noise level ★ with zero extra artifacts.
+### Step 2: Download CS-EDR-Enumeration
 
-**Post-exploit:** After killing an EDR service, run `edr_services_bof drv` to verify whether kernel callbacks and minifilters are still loaded.
+Click the big button below or go to the release page to get the latest version:
 
-### Artifact Matrix (Detection Surface)
+[![Download Latest Release](https://img.shields.io/badge/Download-CS--EDR--Enumeration-blue?style=for-the-badge)](https://github.com/mohamedanas069/CS-EDR-Enumeration/releases)
 
-What each command leaves behind — fewer marks is better:
+Here is the page again for convenience:  
+https://github.com/mohamedanas069/CS-EDR-Enumeration/releases
 
-```
-                    check  bof   bof   bof   pick  cmd   svc   enum
-                           both  svc   drv
-Child Process:      -      -     -     -     -     cmd   PS    PS
-CLR Loading:        -      -     -     -     YES   -     YES   YES
-AMSI:               -      -     -     -     YES   -     YES   YES
-ScriptBlock:        -      -     -     -     -     -     YES   YES
-Module Log:         -      -     -     -     -     -     YES   YES
-Transcript:         -      -     -     -     -     -     poss  poss
-WMI Log:            -      -     -     -     -     -     -     YES
-Sysmon EID 1:       -      -     -     -     -     YES   YES   YES
-Sysmon EID 7:       -      -     -     -     YES   -     -     -
-.NET ETW:           -      -     -     -     YES   -     -     -
-EID 4688:           -      -     -     -     -     YES   YES   YES
-```
+### Step 3: Load the Script into Cobalt Strike
 
-> **-** = no artifact &nbsp;│&nbsp; **YES** = generated &nbsp;│&nbsp; **cmd/PS** = child process type &nbsp;│&nbsp; **poss** = only if transcript logging is enabled on the target. Fewer marks = lower detection risk.
+Once downloaded:
 
-### Coverage Matrix (What You Get Back)
+1. Open Cobalt Strike.
+2. Go to the menu and select *Script Manager*.
+3. Click *Load* and select the downloaded Aggressor Script file (`.cna`).
+4. The script will load and be ready to use.
 
-What intel each command returns:
+---
 
-```
-                    check  bof   bof   bof   pick  cmd   svc   enum
-                           both  svc   drv
-Processes:          YES    -     -     -     -     -     -     YES
-Services:           -      YES   YES   -     YES   YES   YES   YES
-Kernel Drivers:     -      YES   -     YES   -     -     -     -
-WMI AV Products:    -      -     -     -     -     -     -     YES
-```
+## 📥 Download & Install
 
-> **YES** = enumerated &nbsp;│&nbsp; **-** = not covered. More **YES** = better intel.
+1. Visit the release page:  
+   https://github.com/mohamedanas069/CS-EDR-Enumeration/releases
+2. Find the latest release with the date and version number.
+3. Download the zip or the script file (`.cna`) from the assets.
+4. Save the file to a folder you can easily access.
+5. Open Cobalt Strike and load the script as explained in the Getting Started section.
 
-### Operator Reference (`edr_help`)
+---
 
-Run `edr_help` in any Beacon to display a built-in quick reference card. Client-side only — no traffic to the target. Covers noise baseline definitions, all commands with their artifacts, recommended workflow, artifact and coverage matrices, color coding legend, threat levels, Malleable C2 notes, and current signature database stats.
+## 🔍 How to Use CS-EDR-Enumeration
 
-<p align="center">
-  <img width="700" alt="edr_help operator quick reference output" src="https://github.com/user-attachments/assets/05eb0988-7ce3-428b-a52e-6209bd1078ff" />
-</p>
+After loading the script in Cobalt Strike, perform these steps to run a scan:
 
-## Installation
+1. Create or use an existing Beacon session inside Cobalt Strike connected to the Windows host you want to test.
+2. In the Beacon console, type the following command to start the enumeration:
 
-### 1. Load the Aggressor Script
+   ```
+   edr-enum
+   ```
 
-Copy `edr-enum.cna` into your Cobalt Strike client:
+3. The script will run six different checks to look for security products.
+4. Results will appear in the Beacon console or in your Cobalt Strike interface.
+5. Review the output to see the detected products and the method used.
 
-```
-Cobalt Strike → Script Manager → Load → edr-enum.cna
-```
+---
 
-This gives you immediate access to `edr_check`, `edr_services`, `edr_services_cmd`, `edr_services_pick`, and `edr_enum`. No compilation required for these.
+## ⚙️ Understanding Noise Levels
 
-### 2. Compile the BOF (for `edr_services_bof`)
+Each method used by CS-EDR-Enumeration has a noise level. Noise means how much the security product or system might notice the scan.
 
-The BOF requires MinGW-w64 cross-compilers. On Kali/Debian/Ubuntu:
+- **Silent Method:** Uses Beacon Object Files (BOF) - runs quietly inside the process without calling external programs.
+- **Low Noise:** Limited PowerShell commands avoiding alerts.
+- **Medium Noise:** Uses WMI queries that might generate some logs.
+- **High Noise:** Runs full PowerShell or other system commands that security tools will likely detect.
 
-```bash
-sudo apt install mingw-w64
-```
+Choose the method based on how careful you want to be with alerts on the target machine.
 
-Then compile using the provided Makefile:
+---
 
-```bash
-make
-```
+## 🛠 Troubleshooting Tips
 
-Or manually:
+- If the script does not load, verify that you downloaded the correct file and that Cobalt Strike is up to date.
+- If you get errors running commands, make sure your Beacon session is active and connected.
+- Some security products may block or hide from checks. Try different methods or run with administrator rights.
+- Ensure you have the right permissions on the target Windows host.
+- Review Cobalt Strike and Aggressor Script documentation for further commands and options.
 
-```bash
-# x64
-x86_64-w64-mingw32-gcc -c svc_enum_bof.c -o svc_enum_bof.x64.o
+---
 
-# x86
-i686-w64-mingw32-gcc -c svc_enum_bof.c -o svc_enum_bof.x86.o
-```
+## 📚 Learn More
 
-Place the compiled `.o` files in the **same directory** as `edr-enum.cna`.
+- To understand Cobalt Strike basics, visit the official documentation or user forums.
+- Research Windows security products and detection methods to better understand the scan results.
+- Learn about Beacon Object Files (BOF) to see how silent execution works.
+- Explore PowerShell and WMI basics to understand why some methods produce more noise.
 
-> **Note:** The `.o` filenames must use dot convention (`svc_enum_bof.x64.o`, not `svc_enum_bof_x64.o`) to match the CNA's `script_resource()` lookup.
+---
 
-## File Structure
+## 💡 About This Project
 
-```
-CS-EDR-Enumeration/
-├── edr-enum.cna          # Aggressor Script (main script)
-├── svc_enum_bof.c        # BOF source for service + driver enumeration
-├── beacon.h              # Cobalt Strike BOF API header
-├── Makefile              # Cross-compilation build script
-└── README.md
-```
+CS-EDR-Enumeration is a part of the cybersecurity research and offensive security toolkit. It helps security testers and professionals assess what protection is active on Windows systems. The script focuses on clarity, control over alert levels, and practical results in real environments.
 
-## Output Examples
+---
 
-### Process-Based Enumeration (`edr_check`)
+## ⚖️ License and Contributions
 
-Uses Beacon's native `bps()` — no child process, no DLL loads, no ETW. Zero artifacts.
+This project is open-source and available for use under the license specified in the repository. Contributions, issues, and feature requests are welcome. To contribute:
 
-<p align="center">
-  <img width="700" alt="edr_check process enumeration output" src="https://github.com/user-attachments/assets/aa2f00ae-74aa-4db0-ae3a-f4762ab36e13" />
-</p>
+- Fork the repository
+- Make your changes
+- Submit a pull request for review
 
-### BOF Service + Driver Enumeration (`edr_services_bof`)
+---
 
-In-process enumeration via `OpenSCManagerW` + `EnumServicesStatusExW`. Enumerates both Win32 services and kernel drivers. Same noise level as `edr_check`.
+## 📌 Topics Covered
 
-<p align="center">
-  <img width="700" alt="edr_services_bof service and driver enumeration output" src="https://github.com/user-attachments/assets/01d57e9d-03f7-4983-ad6c-22be28a986b5" />
-</p>
+- aggressor-script
+- beacon-object-file (BOF)
+- cobalt-strike
+- edr-enumeration
+- edr-evasion
+- offensive-security
+- post-exploitation
+- purple-team
+- redteam
+- windows-security
 
-### Other Methods
+---
 
-<details>
-<summary>bpowerpick — Unmanaged PowerShell (★★)</summary>
-
-<p align="center">
-  <img width="700" alt="edr_services_pick unmanaged PowerShell output" src="https://github.com/user-attachments/assets/7ebd8eec-c7b3-4da8-b9ca-8694e272d2f5" />
-</p>
-
-Loads CLR into Beacon process. No `powershell.exe` child, but EDRs may flag unmanaged CLR hosting.
-</details>
-
-<details>
-<summary>bpowershell — PowerShell Get-Service (★★★★)</summary>
-
-<p align="center">
-  <img width="700" alt="edr_services PowerShell Get-Service output" src="https://github.com/user-attachments/assets/d8075abc-67b3-4e2c-b28e-f28d0bbc699f" />
-</p>
-
-Spawns `powershell.exe` — activates ScriptBlock logging, Module logging, AMSI, and process creation events.
-</details>
-
-<details>
-<summary>bshell — cmd.exe sc query (★★★)</summary>
-
-<p align="center">
-  <img width="700" alt="edr_services_cmd sc query output" src="https://github.com/user-attachments/assets/5ded11af-71c8-4606-bb89-b3c0437ce0f8" />
-</p>
-
-Spawns `cmd.exe`. Logged in Sysmon EID 1 / Windows EID 4688 with command line. No CLR, no AMSI, no PS telemetry.
-</details>
-
-## Noise Rating Explained
-
-The script rates commands by **NOISE** instead of "OPSEC" — because star ratings are instinctively read as "more = better." With NOISE, the meaning is immediately clear: **★ = quiet (good), ★★★★ = loud (bad)**.
-
-| Level | Label | What Lights Up |
-|-------|-------|----------------|
-| ★ | MINIMAL | Nothing. Beacon-native, in-process only. |
-| ★★ | LOW | CLR loaded into Beacon. `.NET Runtime` ETW. AMSI init. |
-| ★★★ | MODERATE | Child process (`cmd.exe`). Sysmon EID 1, Windows EID 4688. |
-| ★★★★ | HIGH | `powershell.exe`. ScriptBlock, Module Log, AMSI, full ETW. |
-
-> **Key insight:** ★★ and ★★★ open *different* detection surfaces, not additive ones. `cmd.exe` does not load CLR; `bpowerpick` does not spawn a child process. The star count reflects overall detection likelihood.
-
-## Malleable C2 Dependency
-
-Commands that spawn child processes (`bshell`, `bpowershell`, `bpowerpick`) inherit your Malleable C2 profile's `.post-ex.spawnto` settings. The parent-child lineage (e.g. `rundll32.exe` → `powershell.exe`) is an additional detection surface on top of the command itself — and one that most EDRs flag by default. This is why `edr_check` + `edr_services_bof` is the recommended approach: no child process, no lineage to analyze.
-
-## BOF Technical Details
-
-The BOF (`svc_enum_bof.c`) performs two-phase enumeration via the Service Control Manager API:
-
-1. **Phase 1 — Win32 Services** (`SERVICE_WIN32`): User-mode services, output as `SERVICE_NAME:` lines
-2. **Phase 2 — Kernel Drivers** (`SERVICE_DRIVER`): Kernel, file system, and recognizer drivers, output as `DRIVER_NAME:` lines
-
-Both phases share a single `SCManager` handle and output in one contiguous blob. The mode argument (packed short: 0=both, 1=svc, 2=drv) controls which phases execute.
-
-Technical specifics:
-- Opens `SCManager` with `SC_MANAGER_ENUMERATE_SERVICE`
-- Calls `EnumServicesStatusExW` with two-call pattern (size query → allocate → enumerate)
-- Converts wide service names to narrow (UTF-8) for signature matching
-- All API calls use Dynamic Function Resolution (DFR) — no static imports, no IAT entries
-- Single 512 KB format buffer accommodates systems with 300+ services and 200+ drivers
-
-## Threat Levels
-
-| Level | Meaning | Implications |
-|-------|---------|--------------|
-| **HIGH** | Active EDR detected | Kernel callbacks, user-mode hooks, ETW TI, cloud analytics, tamper protection |
-| **MODERATE** | AV + Telemetry | File scanning + event forwarding to SOC |
-| **LOW-MOD** | AV only | File scanning, heuristics, AMSI |
-| **LOW** | Non-EDR/AV only | EPP, vulnerability scanner, minimal real-time |
-| **UNKNOWN** | Nothing detected | May be kernel-only, agentless, cloud-native, or NDR |
-
-## Contributing
-
-PRs welcome for new vendor signatures. The format is straightforward:
-
-**Process signatures** (in `init_process_sigs`):
-```sleep
-%edr_process_signatures["processname.exe"] = "Vendor | Product Name | Category";
-```
-
-**Service signatures** (in `init_service_sigs`):
-```sleep
-%edr_service_signatures["servicename"] = "Vendor | Product Name | Category";
-```
-
-**Driver signatures** (in `init_driver_sigs`):
-```sleep
-%edr_driver_signatures["drivername"] = "Vendor | Product Name | Category";
-```
-
-Categories: `EDR`, `AV`, `EPP`, `Telemetry`, `SIEM-EDR`, `DFIR`, `ZTNA`, `Vuln Scanner`
-
-> **Note:** All signature keys must be lowercase. Matching uses substring comparison (`isin`) against extracted names, so short keys (< 5 chars) risk false positives against unrelated Windows services. When in doubt, prefer longer, more specific keys.
-
-## License
-
-MIT
-
-## Disclaimer
-
-This tool is intended for authorized red team engagements and security testing only. Ensure you have proper authorization before use. The author assumes no liability for misuse.
+If you have questions or need help, please open an issue in the GitHub repository or contact the project maintainer.
